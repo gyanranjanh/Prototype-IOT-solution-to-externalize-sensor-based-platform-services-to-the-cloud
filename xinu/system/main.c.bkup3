@@ -1,0 +1,35 @@
+/*  main.c  - main */
+#include <xinu.h>
+
+/*-----------------------------local symbolic constant-----------------*/
+#ifndef TRUE
+#define TRUE 1
+#endif
+
+#ifndef FALSE 
+#define FALSE 0
+#endif
+
+process producer() {
+}
+
+process consumer() {
+}
+
+process	main(void) {
+	pid32 producer_id, consumer_id;
+	uint8 count = 0;
+
+	recvclr();
+
+	resched_cntl(DEFER_START);
+	producer_id = create(producer, 4096, 200, "producer", 0);
+	consumer_id = create(consumer, 4096, 200, "consumer", 0);
+
+	resume(producer_id);
+	resume(consumer_id);
+	resched_cntl(DEFER_STOP);
+
+
+	return OK;
+}

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="/stylesheets/styleindex.css" type="text/css">
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.1/jquery.min.js"></script>
+</head>
+
+
+<body>
+
+<homepage-hero id ="home">
+  <h1 align="center"> DOS PROJECT </h1>
+
+  <div class="contain">
+    <div class="left" >
+      <a href="../BBB2">
+      <img class="direction" src="../images/previous.png" width="70" height="70"/>
+      </a>
+    </div>
+
+    <div class="center"> <div class="header" ><b>Sensor Dashboard</b></div>
+      <iframe src="https://app.initialstate.com/embed/#/tiles/2ChwVZliQM4WnZ1UbgkZjSga8JUT2Epk%3AMOD"></iframe>
+  </div>
+    <div class="containbelow"></div>
+    <div class="right">
+      <a href="../BBB1">
+      <img class="direction" src="../images/next.png" width="70" height=70" />
+      </a>
+    </div>
+
+  </div>
+</homepage-hero>
+
+
+<script type="text/javascript">
+
+    $(document).ready(function(){
+        initTextBox(0);
+        });
+    function initTextBox(i){
+
+        var txtBoxContainer = $('<div/>',{
+            class: 'submit_on_enter',
+
+        });
+        var txtBox = $('<input/>',{
+            class: '',
+            type:'text',
+            id:'inputlow'+i,
+            placeholder: "Low (°C)"
+        });
+
+        var txtBox2 = $('<input/>',{
+            class: '',
+            type:'text',
+            id:'inputhigh'+i,
+            placeholder: "High (°C)"
+        });
+
+        var txtBoxButton = $('<button/>',{
+            class: '',
+            id:'submit'+i,
+            text:'Set Temperature Range'
+
+        });
+        txtBoxContainer.append(txtBox);
+        txtBoxContainer.append("   :   ");
+        txtBoxContainer.append(txtBox2);
+        txtBoxContainer.append(" ");
+        txtBoxContainer.append(txtBoxButton);
+
+        $('.containbelow').append(txtBoxContainer);
+    }
+
+
+
+    $(document).on('click','.submit_on_enter button',function(){
+        var low = $(this).prev().prev().val();
+        var high = $(this).prev().val();
+        console.log(low+""+high);
+        $.get("?low="+low+"&high="+high, function(data, status){
+
+        });
+
+    });
+</script>
+</body>
+</html>
+
+
+
+

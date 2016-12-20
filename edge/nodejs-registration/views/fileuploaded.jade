@@ -1,0 +1,19 @@
+doctype html
+html
+    head
+        title= title
+    body
+        p File Added Successfully
+        form#uploadForm(ref='uploadForm', action='/', method='get', enctype='multipart/form-data')
+        button(onclick="move()") Upload Another DDL
+        br
+        form#SendForm(ref='SendForm', action='/fileuploaded', method='post', enctype='multipart/form-data')
+            button(onclick="move1()") File Upload Done
+script.
+    function move() {
+        window.location.href = '/upload'
+    }
+script.
+    function move1() {
+        window.location.href = '/userlist'
+    }

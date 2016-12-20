@@ -1,0 +1,527 @@
+/*  main.c  - main */
+#include <xinu.h>
+
+/*-----------------------------local symbolic constant-----------------*/
+#ifndef TRUE
+#define TRUE 1
+#endif
+
+#ifndef FALSE 
+#define FALSE 0
+#endif
+
+#define TC1 1
+#define TC2 2
+#define TC3 3
+#define TC4 4
+#define TC5 5
+#define TC6 6
+
+typedef uint8 testcase8;
+
+/*-------------------------------local data---------------------------*/
+
+/*------------------------------private routines------------------------*/
+/*---------------------------------------------------------------------*/
+
+/*------------------------------Test-Cases-----------------------------*/
+#define NMSGS 5
+mutx32 tc5_mutx;
+uint8 tc5_count;
+/* Process 1 */
+static process pr_1(testcase8 tc, pid32 pid, pid32 pr4, pid32 pr5, pid32 pr6) {
+	const uint32 nmsgs = NMSGS; /* No of messages to send  */
+	uint32 msg_count   = 0;     /* Message iterator        */
+	uint32 temp;                /* Temporary variable      */
+	umsg32 msgs[nmsgs];         /* Message array           */
+	pid32  pids[3];             /* Process ID array        */
+	bool8 result = TRUE;
+
+	switch(tc) {
+		case TC1:
+		case TC2:
+			while(msg_count < nmsgs) {
+				temp = msg_count + 1;
+				if (sendMsg(pr4, temp) == SYSERR ||
+					sendMsg(pr5, temp) == SYSERR ||
+					sendMsg(pr6, temp) == SYSERR) {
+					result = FALSE;
+					break;
+				}
+				msg_count++;
+			}
+
+			sendMsg(pid, result);
+			break;
+		case TC3:
+			for (msg_count=0; msg_count < nmsgs; msg_count++) {
+				msgs[msg_count] = msg_count + 1;
+			}
+
+			if (sendMsgs(pr4, msgs, nmsgs) != nmsgs) {
+				result = FALSE;
+			}
+
+			if(result && sendMsgs(pr5, msgs, nmsgs) != nmsgs) {
+				result = FALSE;
+			}
+
+			if(result && sendMsgs(pr6, msgs, nmsgs) != nmsgs) {
+				result = FALSE;
+			}
+
+			sendMsg(pid, result);
+			break;
+		case TC4:
+			pids[0] = pr4; pids[1] = pr5; pids[2] = pr6;
+			while(msg_count < nmsgs) {
+				temp = msg_count + 1;
+				if (sendnMsg(3, pids, temp) != 3) {
+					result = FALSE;
+					break;
+				}
+				msg_count++;
+			}
+
+			sendMsg(pid, result);
+			break;
+		case TC5:
+			pids[0] = -1; pids[1] = pr5; pids[2] = pr6;
+			while(msg_count < nmsgs) {
+				temp = msg_count + 1;
+				if (sendnMsg(3, pids, temp) != 3) {
+					result = FALSE;
+					break;
+				}
+				msg_count++;
+			}
+
+			/*while (TRUE) {
+				mutex_acquire(tc5_mutx);
+				if(tc5_count == 2) {
+					mutex_release(tc5_mutx);
+					break;
+				}
+				mutex_release(tc5_mutx);
+				sleepms(QUANTUM);
+			}*/
+
+			if (!result) {
+				sendMsg(pid, TRUE);
+			}
+			break;
+		default:
+			kprintf("Invalid Test\n");
+
+	}
+
+	return OK;
+}
+
+/* Process 2 */
+static process pr_2(testcase8 tc, pid32 pid, pid32 pr4, pid32 pr5, pid32 pr6) {
+	const uint32 nmsgs = NMSGS; /* No of messages to send */
+	uint32 msg_count   = 0;     /* Message iterator       */
+	uint32 temp;                /* temporary variable     */
+	umsg32 msgs[nmsgs];         /* message array          */
+	pid32  pids[3];             /* Process ID array       */
+	bool8 result = TRUE;
+
+	switch(tc) {
+		case TC1:
+		case TC2:
+			while(msg_count < nmsgs) {
+				temp = 10 + msg_count + 1;
+				if (sendMsg(pr4, temp) == SYSERR ||
+					sendMsg(pr5, temp) == SYSERR ||
+					sendMsg(pr6, temp) == SYSERR) {
+					result = FALSE;
+					break;
+				}
+				msg_count++;
+			}
+
+			sendMsg(pid, result);
+			break;
+		case TC3:
+			for (msg_count=0; msg_count < nmsgs; msg_count++) {
+				msgs[msg_count] = 10 + msg_count + 1;
+			}
+
+			if (sendMsgs(pr4, msgs, nmsgs) != nmsgs) {
+				result = FALSE;
+			}
+
+			if(result && sendMsgs(pr5, msgs, nmsgs) != nmsgs) {
+				result = FALSE;
+			}
+
+			if(result && sendMsgs(pr6, msgs, nmsgs) != nmsgs) {
+				result = FALSE;
+			}
+
+			sendMsg(pid, result);
+			break;
+		case TC4:
+		case TC5:
+			pids[0] = pr4; pids[1] = pr5; pids[2] = pr6;
+			while(msg_count < nmsgs) {
+				temp = 10 + msg_count + 1;
+				if (sendnMsg(3, pids, temp) < 2) {
+					result = FALSE;
+					break;
+				}
+				msg_count++;
+			}
+
+			sendMsg(pid, result);
+			break;
+		case TC6:
+			break;
+		default:
+			kprintf("Invalid Test\n");
+
+	}
+
+	return OK;
+}
+
+/* Process 3 */
+static process pr_3(testcase8 tc, pid32 pid, pid32 pr4, pid32 pr5, pid32 pr6) {
+	const uint32 nmsgs = NMSGS; /* No of messages to send */
+	uint32 msg_count   = 0;     /* Message iterator       */
+	uint32 temp;                /* temporary variable     */
+	umsg32 msgs[nmsgs];         /* message array          */
+	pid32  pids[3];             /* Process ID array       */
+	bool8 result = TRUE;
+
+	switch(tc) {
+		case TC1:
+		case TC2:
+			while(msg_count < nmsgs) {
+				temp = 20 + msg_count + 1;
+				if (sendMsg(pr4, temp) == SYSERR ||
+					sendMsg(pr5, temp) == SYSERR ||
+					sendMsg(pr6, temp) == SYSERR) {
+					result = FALSE;
+					break;
+				}
+				msg_count++;
+			}
+
+			sendMsg(pid, result);
+			break;
+		case TC3:
+			for (msg_count=0; msg_count < nmsgs; msg_count++) {
+				msgs[msg_count] =  20 + msg_count + 1;
+			}
+
+			if (sendMsgs(pr4, msgs, nmsgs) != nmsgs) {
+				result = FALSE;
+			}
+
+			if(result && sendMsgs(pr5, msgs, nmsgs) != nmsgs) {
+				result = FALSE;
+			}
+
+			if(result && sendMsgs(pr6, msgs, nmsgs) != nmsgs) {
+				result = FALSE;
+			}
+
+			sendMsg(pid, result);
+			break;
+		case TC4:
+		case TC5:
+			pids[0] = pr4; pids[1] = pr5; pids[2] = pr6;
+			while(msg_count < nmsgs) {
+				temp = 20 + msg_count + 1;
+				if (sendnMsg(3, pids, temp) < 2) {
+					result = FALSE;
+					break;
+				}
+				msg_count++;
+			}
+
+			sendMsg(pid, result);
+			break;
+		case TC6:
+			break;
+		default:
+			kprintf("Invalid Test\n");
+
+	}
+
+	return OK;
+}
+
+/* Process 4 */
+static process pr_4(testcase8 tc, pid32 pid) {
+	/* Should receive 30 messages - 10 each from 
+	 * pr1, pr2 and pr3 */
+	const uint32 nmsgs = 3*NMSGS; /* No of messages to send */
+	uint32 msg_count   = 0;       /* Message iterator */
+	umsg32 msgs[nmsgs];           /* message array    */
+	bool8 result = TRUE;
+
+	switch(tc) {
+		case TC1:
+			while(msg_count < nmsgs) {
+				if(receiveMsg() == SYSERR) {
+					result = FALSE;
+					break;
+				}
+				msg_count++;
+			}
+
+			sendMsg(pid, result);
+			break;
+		case TC2:
+		case TC3:
+		case TC4:
+			if(receiveMsgs(msgs, nmsgs) != OK) {
+				result = FALSE;
+			}
+
+			sendMsg(pid, result);
+			break;
+		case TC5:
+			/* while (TRUE) {
+				mutex_acquire(tc5_mutx);
+				if(tc5_count == 2) {
+					mutex_release(tc5_mutx);
+					break;
+				}
+				mutex_release(tc5_mutx);
+				sleepms(QUANTUM);
+			}*/
+			sendMsg(pid, result);
+			break;
+		case TC6:
+			break;
+		default:
+			kprintf("Invalid Test\n");
+
+	}
+
+	return OK;
+}
+
+/* Process 5 */
+static process pr_5(testcase8 tc, pid32 pid) {
+	/* Should receive 30 messages - 10 each from 
+	 * pr1, pr2 and pr3 */
+	const uint32 nmsgs = 3*NMSGS; /* No of messages to send */
+	uint32 msg_count   = 0;       /* Message iterator */
+	umsg32 msgs[nmsgs];           /* Message array    */
+	bool8 result = TRUE;
+
+	switch(tc) {
+		case TC1:
+			while(msg_count < nmsgs) {
+				if (receiveMsg() == SYSERR) {
+					result = FALSE;
+					break;
+				}
+				msg_count++;
+			}
+
+			sendMsg(pid, result);
+			break;
+		case TC2:
+		case TC3:
+		case TC4:
+			if(receiveMsgs(msgs, nmsgs) != OK) {
+				result = FALSE;
+			}
+			sendMsg(pid, result);
+			break;
+		case TC5:
+			if(receiveMsgs(msgs, nmsgs - (NMSGS - 1)) != OK) {
+				result = FALSE;
+			}
+
+			mutex_acquire(tc5_mutx);
+			tc5_count++;
+			mutex_release(tc5_mutx);
+
+			sendMsg(pid, result);
+			break;
+		case TC6:
+			break;
+		default:
+			kprintf("Invalid Test\n");
+
+	}
+
+	return OK;
+}
+
+/* Process 6 */
+static process pr_6(testcase8 tc, pid32 pid) {
+	/* Should receive 30 messages - 10 each from 
+	 * pr1, pr2 and pr3 */
+	const uint32 nmsgs = 3*NMSGS; /* No of messages to send */
+	uint32 msg_count   = 0;       /* Message iterator */
+	umsg32 msgs[nmsgs];           /* Message array    */
+	bool8 result = TRUE;
+
+	switch(tc) {
+		case TC1:
+			while(msg_count < nmsgs) {
+				if (receiveMsg() == SYSERR) {
+					result = FALSE;
+					break;
+				}
+				msg_count++;
+			}
+
+			sendMsg(pid, result);
+			break;
+		case TC2:
+		case TC3:
+		case TC4:
+			if(receiveMsgs(msgs, nmsgs) != OK) {
+				result = FALSE;
+			}
+			sendMsg(pid, result);
+			break;
+		case TC5:
+			if(receiveMsgs(msgs, nmsgs - (NMSGS - 1)) != OK) {
+				result = FALSE;
+			}
+
+			mutex_acquire(tc5_mutx);
+			tc5_count++;
+			mutex_release(tc5_mutx);
+
+			sendMsg(pid, result);
+			break;
+		case TC6:
+			break;
+		default:
+			kprintf("Invalid Test\n");
+
+	}
+
+	return OK;
+}
+
+/*-----------------------------Test-Case 1-----------------------------*/
+
+/* Test-Case 1: Test sendMsg() and receiveMsg() only
+ * Processes pr1, pr2 and  pr3 send 10 messages each
+ * to pr4, pr5 and pr6 */
+/*-----------------------------Test-Case 2-----------------------------*/
+
+/* Test-Case 2: Test receiveMsgs() only
+ * Processes pr1, pr2 and  pr3 send 10 messages each
+ * to pr4, pr5 and pr6. pr4, pr5 and pr6 each makes
+ * a call to receiveMsgs() only once */
+
+/*-----------------------------Test-Case 3-----------------------------*/
+
+/* Test-Case 3: Test sendMsgs() and receiveMsgs() only
+ * Processes pr1, pr2 and  pr3 send 10 messages each
+ * to pr4, pr5 and pr6. pr4, pr5 and pr6 each makes
+ * a call to receiveMsgs() only once */
+
+/*-----------------------------Test-Case 4-----------------------------*/
+/* Test-Case 4: Test sendnMsgs() and receiveMsgs() only
+ * Processes pr1, pr2 and  pr3 send 10 messages each
+ * to pr4, pr5 and pr6. pr4, pr5 and pr6 each makes
+ * a call to receiveMsgs() only once */
+
+/*-----------------------------Test-Case 5-----------------------------*/
+/* Test-Case 5: Test sendnMsgs() by passing badpid
+ * Processes pr1, pr2 and  pr3 send 10 messages each
+ * to pr4, pr5 and pr6. pr4, pr5 and pr6 each makes
+ * a call to receiveMsgs() only once */
+
+static bool8 test_case(testcase8 TC)
+{
+	pid32 pid, pr1, pr2, pr3, pr4, pr5, pr6;
+	uint8 rcount; /* Rsult iterator */
+	umsg32 results[6];
+	bool8 result = TRUE;
+
+	/* get main process id */
+	pid = getpid();
+
+	switch(TC) {
+		case TC5:
+			tc5_mutx = create_mutex();
+		default: ;
+	}
+
+	/* defer reched so that main process can ensure resuming
+         * all the processes it is creating */
+	resched_cntl(DEFER_START);
+	pr4 = create(pr_4, 4096, 50, "pr_4", 2, TC, pid);
+	pr5 = create(pr_5, 4096, 50, "pr_5", 2, TC, pid);
+	pr6 = create(pr_6, 4096, 50, "pr_6", 2, TC, pid);
+	pr1 = create(pr_1, 4096, 50, "pr_1", 5, TC, pid, pr4, pr5, pr6);
+	pr2 = create(pr_2, 4096, 50, "pr_2", 5, TC, pid, pr4, pr5, pr6);
+	pr3 = create(pr_3, 4096, 50, "pr_3", 5, TC, pid, pr4, pr5, pr6);
+	kprintf("\nProcesses are: %d %d %d %d %d %d\n", pr1, pr2, pr3, pr4, pr5, pr6);
+
+	resume(pr1);
+	resume(pr2);
+	resume(pr3);
+	resume(pr4);
+	resume(pr5);
+	resume(pr6);
+	resched_cntl(DEFER_STOP);
+
+	/* wait on processes to send results */
+	if(receiveMsgs(results, 6) == OK) {
+		for (rcount = 0; rcount < 6; rcount++) {
+			if (results[rcount] == FALSE) {
+				result = FALSE;
+				break;
+			}
+		}
+	}
+
+	switch(TC) {
+		case TC5:
+			destroy_mutex(tc5_mutx);
+		default: ;
+	}
+
+	kprintf("\nTest-Case %u %s\n", TC, result ? "passed" : "failed");
+
+	return result;
+}
+
+/*-----------------------------End Test-Cases-----------------------------*/
+
+process	main(void) {
+	bool8 results[5];
+	uint8 rcount, pcount = 0;
+
+	/* ensure there is no pending message for main */
+	recvclr();
+
+	results[0] = test_case(TC1);
+	results[1] = test_case(TC2);
+	results[2] = test_case(TC3);
+	results[3] = test_case(TC4);
+	results[4] = test_case(TC5); 
+
+	kprintf("\n\n");
+
+	for (rcount = 0; rcount < 5; rcount++) {
+		if (results[rcount] == FALSE) {
+			kprintf("Test Case: %u failed\n", rcount + 1);
+		}
+		else {
+			pcount++;
+		}
+	}
+
+	if (pcount) {
+		kprintf("%u test cases passed\n", pcount);
+	}
+
+	return OK;
+}

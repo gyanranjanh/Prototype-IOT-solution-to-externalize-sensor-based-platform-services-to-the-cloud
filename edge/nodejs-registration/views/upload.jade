@@ -1,0 +1,7 @@
+html
+    body
+        form#uploadForm(ref='uploadForm', action='/upload', method='post', enctype='multipart/form-data')
+            input#inputUserName(type="text", placeholder="bbbid", name="bbbid")
+            br
+            input(type='file', name='DDLFile')
+            input(type='submit', value='Add Device DDL!')

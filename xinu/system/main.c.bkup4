@@ -1,0 +1,552 @@
+/*  main.c  - main */
+#include <xinu.h>
+
+/*-----------------------------local symbolic constant-----------------*/
+#ifndef TRUE
+#define TRUE 1
+#endif
+
+#ifndef FALSE 
+#define FALSE 0
+#endif
+
+#define TC1 1
+#define TC2 2
+#define TC3 3
+#define TC4 4
+#define TC5 5
+#define TC6 6
+#define TC7 7
+
+sid32 p1_sig_sema;
+sid32 p2_sig_sema;
+sid32 p3_sig_sema;
+
+typedef uint8 testcase8;
+/* extern process broker(); *//* broker process for event handling    */
+testcase8 curTc;
+
+/*--------------------------------local data----------------------------*/
+
+/*------------------------------private routines------------------------*/
+void topic_hdlr_p1(topic16 topic, void *data, uint32 size)
+{
+	static uint8 count = 0;
+	uint32 i;
+	switch (topic) {
+		case 1:
+			kprintf("hdlr_p1: topic 1: msg: \n");
+			for (i = 0; i < size; i++) {
+				kprintf(" 0x%x", ((char *)data)[i]);
+			}
+			kprintf("\n");
+			if (++count == 5 && curTc == TC1) {
+				count = 0;
+				signal(p1_sig_sema);
+			}
+			else if (curTc == TC2 || curTc == TC4) {
+				signal(p1_sig_sema);
+			}
+			break;
+		case 2:
+			kprintf("hdlr_p1: topic 2: msg: \n");
+			for (i = 0; i < size; i++) {
+				kprintf(" 0x%x", ((char *)data)[i]);
+			}
+			kprintf("\n");
+			if (++count == 5 && curTc == TC1) {
+				count = 0;
+				signal(p1_sig_sema);
+			}
+			else if (curTc == TC2) {
+				signal(p1_sig_sema);
+			}
+			break;
+		case 3:
+			kprintf("hdlr_p1: topic 3: msg: \n");
+			for (i = 0; i < size; i++) {
+				kprintf(" 0x%x", ((char *)data)[i]);
+			}
+			kprintf("\n");
+			if (++count == 5 && curTc == TC1) {
+				count = 0;
+				signal(p1_sig_sema);
+			}
+			break;
+		case 4:
+			kprintf("hdlr_p1: topic 4: msg: \n");
+			for (i = 0; i < size; i++) {
+				kprintf(" 0x%x", ((char *)data)[i]);
+			}
+			kprintf("\n");
+			if (++count == 5 && curTc == TC1) {
+				count = 0;
+				signal(p1_sig_sema);
+			}
+			break;
+		case 5:
+			kprintf("hdlr_p1: topic 5: msg: \n");
+			for (i = 0; i < size; i++) {
+				kprintf(" 0x%x", ((char *)data)[i]);
+			}
+			kprintf("\n");
+			if (++count == 5 && curTc == TC1) {
+				count = 0;
+				signal(p1_sig_sema);
+			}
+			break;
+		default:
+			kprintf("hdlr_p1: topic 0x%x: msg: \n",	topic);
+			for (i = 0; i < size; i++) {
+				kprintf(" 0x%x", ((char *)data)[i]);
+			}
+			kprintf("\n");
+			if (++count == 3 && curTc == TC5) {
+				count = 0;
+				signal(p1_sig_sema);
+			}
+			else if (count == 4 && curTc == TC7) {
+				count = 0;
+				signal(p1_sig_sema);
+			}
+			else if (curTc != TC5 && curTc != TC7) {
+				count = 0;
+				signal(p1_sig_sema);
+			}
+	}
+}
+void topic_hdlr_p2(topic16 topic, void *data, uint32 size)
+{
+	static uint8 count = 0;
+	uint32 i = 0;
+	switch (topic) {
+		case 1:
+			kprintf("hdlr_p2: topic 1: msg: \n");
+			for (i = 0; i < size; i++) {
+				kprintf(" 0x%x", ((char *)data)[i]);
+			}
+			kprintf("\n");
+			if (++count == 5 && curTc == TC1) {
+				count = 0;
+				signal(p2_sig_sema);
+			}
+			else if (curTc == TC2) {
+				signal(p2_sig_sema);
+			}
+			break;
+		case 2:
+			kprintf("hdlr_p2: topic 2: msg: \n");
+			for (i = 0; i < size; i++) {
+				kprintf(" 0x%x", ((char *)data)[i]);
+			}
+			kprintf("\n");
+			if (++count == 5 && curTc == TC1) {
+				count = 0;
+				signal(p2_sig_sema);
+			}
+			else if (curTc == TC2) {
+				signal(p2_sig_sema);
+			}
+			break;
+		case 3:
+			kprintf("hdlr_p2: topic 3: msg: \n");
+			for (i = 0; i < size; i++) {
+				kprintf(" 0x%x", ((char *)data)[i]);
+			}
+			kprintf("\n");
+			if (++count == 5 && curTc == TC1) {
+				count = 0;
+				signal(p2_sig_sema);
+			}
+			else if (curTc == TC4) {
+				signal(p2_sig_sema);
+			}
+			break;
+		case 4:
+			kprintf("hdlr_p2: topic 4: msg: \n");
+			for (i = 0; i < size; i++) {
+				kprintf(" 0x%x", ((char *)data)[i]);
+			}
+			kprintf("\n");
+			if (++count == 5 && curTc == TC1) {
+				count = 0;
+				signal(p2_sig_sema);
+			}
+			break;
+		case 5:
+			kprintf("hdlr_p2: topic 5: msg: \n");
+			for (i = 0; i < size; i++) {
+				kprintf(" 0x%x", ((char *)data)[i]);
+			}
+			kprintf("\n");
+			if (++count == 5 && curTc == TC1) {
+				count = 0;
+				signal(p2_sig_sema);
+			}
+			break;
+		default:
+			++count;
+			kprintf("hdlr_p2: topic 0x%x: msg: \n", topic);
+			for (i = 0; i < size; i++) {
+				kprintf(" 0x%x", ((char *)data)[i]);
+			}
+			kprintf("\n");
+			if (count == 3 && curTc == TC5) {
+				count = 0;
+				signal(p2_sig_sema);
+			}
+			else if (count == 5 && curTc == TC7) {
+				count = 0;
+				signal(p2_sig_sema);
+			}
+			else if (curTc != TC5 && curTc != TC7){
+				count = 0;
+				signal(p2_sig_sema);
+			}
+	}
+}
+/*---------------------------------------------------------------------*/
+
+/*------------------------------Test-Cases-----------------------------*/
+#define NMSGS 5
+mutx32 tc5_mutx;
+uint8 tc5_count;
+
+/* Process 1 */
+static process pr_1(testcase8 tc, pid32 pid) {
+	bool8 result = TRUE;
+
+	switch(tc) {
+		case TC1:
+			subscribe(1, topic_hdlr_p1);
+			subscribe(2, topic_hdlr_p1);
+			subscribe(3, topic_hdlr_p1);
+			subscribe(4, topic_hdlr_p1);
+			subscribe(5, topic_hdlr_p1);
+			wait(p1_sig_sema);
+			unsubscribe(1);
+			unsubscribe(2);
+			unsubscribe(3);
+			unsubscribe(4);
+			unsubscribe(5);
+			sendMsg(pid, result);
+			break;
+		case TC2:
+			subscribe(1, topic_hdlr_p1);
+			wait(p1_sig_sema);
+			unsubscribe(1);
+			subscribe(2, topic_hdlr_p1);
+			wait(p1_sig_sema);
+			unsubscribe(2);
+			sendMsg(pid, result);
+			break;
+		case TC3:
+			subscribe(0x0101, topic_hdlr_p1);
+			wait(p1_sig_sema);
+			unsubscribe(0x0101);
+			sendMsg(pid, result);
+			break;
+		case TC4:
+			subscribe(0x0101, topic_hdlr_p1);
+			wait(p1_sig_sema);
+			unsubscribe(0x0101);
+			sendMsg(pid, result);
+			break;
+		case TC5:
+			subscribe(0x0101, topic_hdlr_p1);
+			subscribe(0x0201, topic_hdlr_p1);
+			subscribe(0x0502, topic_hdlr_p1);
+			wait(p1_sig_sema);
+			unsubscribe(0x0101);
+			unsubscribe(0x0201);
+			unsubscribe(0x0502);
+			sendMsg(pid, result);
+			break;
+		case TC6:
+			if (subscribe(0x01ff, topic_hdlr_p1) != OK) {
+				sendMsg(pid, FALSE);
+			}
+			else if (subscribe(0x02ff, topic_hdlr_p1) != OK) {
+				sendMsg(pid, FALSE);
+			}
+			else if (subscribe(0x03ff, topic_hdlr_p1) != OK) {
+				sendMsg(pid, FALSE);
+			}
+			else if (subscribe(0x04ff, topic_hdlr_p1) != OK) {
+				sendMsg(pid, FALSE);
+			}
+			else {
+				sendMsg(pid, result);
+			}
+			break;
+		case TC7:
+			wait(p1_sig_sema);
+			sendMsg(pid, result);
+			break;
+		default:
+			kprintf("Invalid Test\n");
+
+	}
+
+	return OK;
+}
+
+/* Process 2 */
+static process pr_2(testcase8 tc, pid32 pid) {
+	bool8 result = TRUE;
+
+	switch(tc) {
+		case TC1:
+			subscribe(1, topic_hdlr_p2);
+			subscribe(2, topic_hdlr_p2);
+			subscribe(3, topic_hdlr_p2);
+			subscribe(4, topic_hdlr_p2);
+			subscribe(5, topic_hdlr_p2);
+			wait(p2_sig_sema);
+			unsubscribe(1);
+			unsubscribe(2);
+			unsubscribe(3);
+			unsubscribe(4);
+			unsubscribe(5);
+			sendMsg(pid, result);
+			break;
+		case TC2:
+			subscribe(1, topic_hdlr_p2);
+			subscribe(2, topic_hdlr_p2);
+			wait(p2_sig_sema);
+			wait(p2_sig_sema);
+			sleep(2);
+			unsubscribe(1);
+			unsubscribe(2);
+			sendMsg(pid, result);
+			break;
+		case TC3:
+			subscribe(0x0203, topic_hdlr_p2);
+			wait(p2_sig_sema);
+			unsubscribe(0x0203);
+			sendMsg(pid, result);
+			break;
+		case TC4:
+			subscribe(0x0203, topic_hdlr_p2);
+			wait(p2_sig_sema);
+			unsubscribe(0x0203);
+			sendMsg(pid, result);
+			break;
+		case TC5:
+			subscribe(0x0101, topic_hdlr_p2);
+			subscribe(0x0201, topic_hdlr_p2);
+			subscribe(0x0502, topic_hdlr_p2);
+			wait(p2_sig_sema);
+			unsubscribe(0x0101);
+			unsubscribe(0x0201);
+			unsubscribe(0x0502);
+			sendMsg(pid, result);
+			break;
+		case TC6:
+			sleep(1);
+			if (subscribe(0xcfff, topic_hdlr_p2) != OK) {
+				sendMsg(pid, FALSE);
+			}
+			else if (subscribe(0xdfff, topic_hdlr_p2) != OK) {
+				sendMsg(pid, FALSE);
+			}
+			else if (subscribe(0xefff, topic_hdlr_p2) != OK) {
+				sendMsg(pid, FALSE);
+			}
+			else if (subscribe(0xffff, topic_hdlr_p2) != OK) {
+				sendMsg(pid, FALSE);
+			}
+			else if (subscribe(0xbfff, topic_hdlr_p2) != OK) {
+				sendMsg(pid, result);
+			}
+			else {
+				sendMsg(pid, FALSE);
+			}
+			break;
+		case TC7:
+			wait(p2_sig_sema);
+			sendMsg(pid, result);
+			break;
+		default:
+			kprintf("Invalid Test\n");
+
+	}
+
+	return OK;
+}
+
+/* Process 3 */
+static process pr_3(testcase8 tc, pid32 pid) {
+	bool8 result = TRUE;
+	char data[3] = {1, 2, 3};
+
+	switch(tc) {
+		case TC1:
+			publish(1, data, 3);
+			data[0] = 2;
+			publish(2, data, 3);
+			publish(3, data, 2);
+			data[0] = 3;
+			publish(4, data, 3);
+			data[0] = 4;
+			publish(5, data, 3);
+			sleep(1);
+			data[0] = 5;
+			publish(1, data, 3);
+			data[0] = 6;
+			publish(2, data, 3);
+			sendMsg(pid, result);
+			break;
+		case TC2:
+			publish(1, data, 3);
+			publish(2, data, 3);
+			sleep(1);
+			publish(1, data, 3);
+			publish(2, data, 3);
+			sendMsg(pid, result);
+			break;
+		case TC3:
+			sleep(1);
+			publish(0x0101, data, 3);
+			publish(0x0203, data, 3);
+			sleep(1);
+			publish(0x0101, data, 3);
+			publish(0x0203, data, 3);
+			sendMsg(pid, result);
+			break;
+		case TC4:
+			publish(0x0001, data, 3);
+			publish(0x0003, data, 3);
+			sendMsg(pid, result);
+			break;
+		case TC5:
+			sleep(1);
+			publish(0x0101, data, 3);
+			publish(0x0201, data, 3);
+			publish(0x0502, data, 3);
+			publish(0x0602, data, 3);
+			sendMsg(pid, result);
+			break;
+		case TC6:
+			sendMsg(pid, result);
+			break;
+		case TC7:
+			sleep(1);
+			publish(0x00ff, data, 3);
+			publish(0xffff, data, 3);
+			sendMsg(pid, result);
+			break;
+		default:
+			kprintf("Invalid Test\n");
+
+	}
+
+	return OK;
+}
+
+/*-----------------------------Test-Case 1-----------------------------*/
+/* Test-Case 1: Test lab assignmet Part-1. Subscribe and see data publis-
+ * hed to subscribed events are received by call-back or not. Data publi-
+ * shed after unsubscription should not be received. */ 
+/*-----------------------------Test-Case 2-----------------------------*/
+/* Test-Case 2: Test lab assignmet Part-1. More test on order of subscri-
+ * ption and unsubscription */
+/*-----------------------------Test-Case 3-----------------------------*/
+/* Test-Case 3: Test lab assignment Part-2. Test group subscription and 
+ * unsubscription. */ 
+/*-----------------------------Test-Case 4-----------------------------*/
+/* Test-Case 4: Test lab assignment Part-2. Test wildacard group publish.*/ 
+/*-----------------------------Test-Case 5-----------------------------*/
+/* Test-Case 5: Test lab assignment Part-2. Test multiple processes sub-
+ * scribing to the same topic under the group-id */ 
+/*-----------------------------Test-Case 6-----------------------------*/
+/* Test-Case 6: Test lab assignment Part-2. Test that more than 8 subsc-
+ * ribers are not allowed on a particular topic */ 
+
+static bool8 test_case(testcase8 TC)
+{
+	pid32 pid, pr1, pr2, pr3;
+	/* pid32 bkr; */
+	uint8 rcount; /* Rsult iterator */
+	umsg32 results[3];
+	bool8 result = TRUE;
+
+	/* get main process id */
+	pid = getpid();
+
+	p1_sig_sema = semcreate(0);
+	p2_sig_sema = semcreate(0);
+
+	curTc  = TC;
+
+	/* defer reched so that main process can ensure resuming
+         * all the processes it is creating */
+	resched_cntl(DEFER_START);
+	/*-----------broker process creation has been moved to
+	 * init_topics() in events.c -----------------------*/
+	/* create broker process for event publish */
+	/* bkr = create(broker, 4096, 10, "broker_process", 0, NULL); */
+	pr1 = create(pr_1, 4096, 50, "pr_1", 2, TC, pid);
+	pr2 = create(pr_2, 4096, 50, "pr_2", 2, TC, pid);
+	pr3 = create(pr_3, 4096, 50, "pr_3", 2, TC, pid);
+	kprintf("\nProcesses are: %d %d %d\n", pr1, pr2, pr3);
+
+	/* resume(bkr); */
+	resume(pr1);
+	resume(pr2);
+	resume(pr3);
+	resched_cntl(DEFER_STOP);
+
+	/* wait on processes to send results */
+	if(receiveMsgs(results, 3) == OK) {
+		/* kill(bkr); */
+		for (rcount = 0; rcount < 3; rcount++) {
+			if (results[rcount] == FALSE) {
+				result = FALSE;
+				break;
+			}
+		}
+	}
+
+	semdelete(p1_sig_sema);
+	semdelete(p2_sig_sema);
+
+	kprintf("\nTest-Case %u %s\n", TC, result ? "passed" : "failed");
+
+	return result;
+}
+
+/*-----------------------------End Test-Cases-----------------------------*/
+process	main(void) {
+	bool8 results[7];
+	uint8 rcount, pcount = 0;
+
+	/* ensure there is no pending message for main */
+	recvclr();
+	kprintf("**************main*****************\n");
+
+	results[0] = test_case(TC1);
+	results[1] = test_case(TC2);
+	results[2] = test_case(TC3);
+	results[3] = test_case(TC4);
+	results[4] = test_case(TC5);
+	results[5] = test_case(TC6);
+	results[6] = test_case(TC7);
+
+	kprintf("\n\n");
+
+	for (rcount = 0; rcount < 7; rcount++) {
+		if (results[rcount] == FALSE) {
+			kprintf("Test Case: %u failed\n", rcount + 1);
+		}
+		else {
+			pcount++;
+		}
+	}
+
+	if (pcount) {
+		kprintf("%u test cases passed\n", pcount);
+	}
+
+	return OK;
+}

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="/stylesheets/style.css" type="text/css">
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.1/jquery.min.js"></script>
+</head>
+
+<body>
+
+<homepage-hero id ="home">
+  <h1 align="center"> DOS PROJECT </h1>
+
+  <div class="contain">
+    <div class="left" >
+      <a href="../BBB1">
+      <img class="direction" src="../images/previous.png" width="70" height="70"/>
+      </a>
+    </div>
+
+    <div class="center"> <div class="header" >Beagle Bone Black 2</div>
+      <iframe src="https://app.initialstate.com/embed/#/tiles/7nAExTIXz4LZPcgjzmhvROZjfadJWsbI%3AMOD"></iframe>
+    </div>
+    <div class="containbelow">
+      <div class="below"> </div><div class="below2"> </div></div>
+    <div class="right">
+      <a href="..">
+      <img class="direction" src="../images/next.png" width="70" height=70" />
+      </a>
+    </div>
+
+  </div>
+</homepage-hero>
+
+<script type="text/javascript">
+    var value;
+    $(document).ready(function(){
+
+
+        var array=("<%= global.name2 %>");
+        var data = array.split(',');
+        console.log(data);
+        var arrayLength = data.length;
+        if (arrayLength!=0&&data[0]!="") {
+            for (var i = 0; i < arrayLength; i++) {
+                value = data[i];
+                //console.log(value);
+                initButton();
+
+            }
+        }
+        var arraysen=("<%= global.other2 %>");
+        var datasen = arraysen.split(',');
+        console.log(datasen);
+        var arrayLength = datasen.length;
+        if (arrayLength!=0&&datasen[0]!="") {
+            for (var i = 0; i < arrayLength; i++) {
+                value = datasen[i];
+                //console.log(value);
+
+                initTextBox(i);
+            }
+        }
+
+    });
+
+
+    function initButton(){
+        var r= $('<div/>', {
+            text: value, //set text 1 to 10
+            id: 'btn_',
+            class: 'toggle-button'
+        });
+        //$("body").append(r);
+        var b = $('<button/>');
+        r.append(b);
+        $('.below').append(r);
+    }
+
+
+    $(document).on('click', '.toggle-button', function() {
+        var toggle="off";
+        $(this).toggleClass('toggle-button-selected');
+        //alert($(this).attr('class'));
+        if($(this).hasClass('toggle-button-selected'))
+        {
+            console.log("on");
+            toggle="on";
+        }
+        else{ //$(this).attr('class')==='toggle-button'
+            console.log("off");
+            toggle="off";
+        }
+        var text=$(this).text();
+
+
+        //console.log(text+" "+toggle);
+        $.get("/action?BBBID=1&actuator="+text+"&toggle="+toggle, function(data, status){
+
+        });
+    });
+
+    /*$(document).on('click', '.toggle-button-selected', function() {
+     var toggle="off";
+
+     var text=$(this).text();
+     console.log("inside toggle selected");
+
+     console.log(text+" "+toggle);
+     $.get("/action?BBBID=1&actuator="+text+"&toggle="+toggle, function(data, status){
+
+     });
+
+
+     });*/
+
+
+
+    function initTextBox(i){
+
+        var txtBoxContainer = $('<div/>',{
+            class: 'submit_on_enter',
+
+        });
+        var txtBox = $('<input/>',{
+            class: '',
+            type:'text',
+            id:'input'+i,
+            placeholder: value
+        });
+
+
+        var txtBoxButton = $('<button/>',{
+            class: '',
+            id:'submit'+i,
+            text:'Set Interval'
+
+        });
+        txtBoxContainer.append(txtBox);
+        txtBoxContainer.append(txtBoxButton);
+        //form.append(txtBox);
+        $('.below2').append(txtBoxContainer);
+    }
+
+    /*  $('.txtBoxClass input,select').keydown(function(event) {
+     //event.preventDefault();
+     // enter has keyCode = 13, change it if you want to use another button
+     if (event.keyCode === 13) {
+
+     var text=$(this).val();
+     console.log('Hi');
+     // $.get("/action?BBBID="+text, function(data, status){
+
+     //});
+     //this.form.submit();
+     //this.form.val('');
+     //$('.submit_on_enter').val('');
+     return false;
+     }
+     //return false;
+     });*/
+
+    /*    $(document).on('click', '.toggle-button-selected', function() {
+     var toggle="off";
+
+     var text=$(this).text();
+     console.log("inside toggle selected");
+
+     console.log(text+" "+toggle);
+     $.get("/action?BBBID=1&actuator="+text+"&toggle="+toggle, function(data, status){
+
+     });
+
+
+     });*/
+    $(document).on('click','.submit_on_enter button',function(){
+        var interval = $(this).prev().val();
+        var txt =  $(this).prev().attr('placeholder');
+        console.log(interval);
+
+        $.get("/action?BBBID=1&sensor="+txt+"&interval="+interval, function(data, status){
+
+        });
+        $(this).prev().val("");
+    });
+
+</script>
+
+</body>
+</html>
+
+
+
+

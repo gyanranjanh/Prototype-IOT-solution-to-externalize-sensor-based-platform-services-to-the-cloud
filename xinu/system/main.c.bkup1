@@ -1,0 +1,234 @@
+/*  main.c  - main */
+#include <xinu.h>
+
+/*-----------------------------local symbolic constant-----------------*/
+#ifndef TRUE
+#define TRUE 1
+#endif
+
+#ifndef FALSE 
+#define FALSE 0
+#endif
+
+#define CONSUMED_MAX 100
+#define BUFSIZE CONSUMED_MAX
+/*-------------------------------local data---------------------------*/
+typedef sid32 mutx32;
+typedef bool8 bool;
+pid32 producer_id;
+pid32 consumer_id;
+pid32 timer_id;
+
+int32 data;
+int32 consumed_count = 0;
+
+/* Define your circular buffer structure and semaphore variables here */
+typedef struct circ_buf {
+	int buf[BUFSIZE];
+	int in;
+	int out;
+	mutx32 mx;
+} circ_buf_t;
+
+circ_buf_t cbuf;
+mutx32 sync_consumed_count; /* mutex to sync access to 'consumed_count' */
+
+/*------------------------------private routines------------------------*/
+static mutx32 create_mutex() {
+	mutx32 mx = semcreate(1);
+	return mx;
+}
+
+static void destroy_mutex(mutx32 mx) {
+	(void)semdelete(mx);
+}
+
+/* Place your code for entering a critical section here */
+static void mutex_acquire(mutx32 mutex) {
+	wait(mutex);
+}
+
+/* Place your code for leaving a critical section here */
+static void mutex_release(mutx32 mutex) {
+	signal(mutex);
+}
+
+static void init_cbuf() {
+	cbuf.in = cbuf.out = 0;
+	cbuf.mx = create_mutex();
+}
+
+static void deinit_cbuf() {
+	destroy_mutex(cbuf.mx);
+}
+
+static bool is_cbuf_empty() {
+	bool r = FALSE;
+
+	mutex_acquire(cbuf.mx);
+	if (cbuf.in == cbuf.out)
+		r = TRUE;
+	mutex_release(cbuf.mx);
+	
+	return r;	
+}
+
+static bool is_cbuf_full() {
+	bool r = FALSE;
+
+	mutex_acquire(cbuf.mx);
+	if ((cbuf.in + 1) % BUFSIZE == cbuf.out)
+		r = TRUE;
+	mutex_release(cbuf.mx);
+	//kprintf(" in: %d out: %d ", cbuf.in, cbuf.out);
+
+	return r;
+}
+
+static void produce() {
+	if (is_cbuf_full())
+		panic("Attempt to produce data in full buffer\n");
+
+	mutex_acquire(cbuf.mx);
+	cbuf.buf[cbuf.in] = data++;
+	kprintf(" p: %d ", cbuf.buf[cbuf.in]);
+	cbuf.in = (cbuf.in + 1) % BUFSIZE;
+	mutex_release(cbuf.mx);
+}
+
+static int consume() {
+	int data;
+
+	if (is_cbuf_empty())
+		panic("Attempt to read from empty buffer\n");
+
+	kprintf("consume: I am trying to acquire mutex\n");
+	mutex_acquire(cbuf.mx);
+	data = cbuf.buf[cbuf.out];
+	cbuf.out = (cbuf.out + 1) % BUFSIZE;
+	kprintf(" c: %d ", data);
+	mutex_release(cbuf.mx);
+
+	return data;
+}
+
+/* Place the code for the buffer producer here */
+static process producer(void) {
+
+	while(TRUE) {
+		while (is_cbuf_full()){
+			//kprintf("producer yielding\n");
+			yield();
+		}
+
+		produce();
+	}
+
+	return OK;
+}
+
+/* Place the code for the buffer consumer here */
+static process consumer(void) {
+	kprintf("consumer: 1\n");
+
+	while(TRUE) {
+		kprintf("consumer: 2\n");
+		while (is_cbuf_empty())
+			yield();
+		kprintf("consumer: 3\n");
+
+		consume();
+		mutex_acquire(sync_consumed_count);
+		consumed_count++;
+		mutex_release(sync_consumed_count);
+	}
+
+	return OK;
+}
+
+/* Timing utility function - please ignore */
+static process time_and_end(void) {
+	int32 times[5];
+	int32 i;
+
+	for (i = 0; i < 1; ++i)
+	{
+		times[i] = clktime_ms;
+		yield();
+
+		consumed_count = 0;
+		while (1)
+		{
+			mutex_acquire(sync_consumed_count);
+			if (consumed_count < CONSUMED_MAX * (i+1))
+				yield();
+			else
+				break;
+			mutex_release(sync_consumed_count);
+		}
+		/* The only way to come out of this while loop is to
+		 * break in which case an acquired mutex is not yet 
+		 * released. Release the mutex */
+		mutex_release(sync_consumed_count);
+
+		times[i] = clktime - times[i];
+	}
+
+	kill(producer_id);
+	kill(consumer_id);
+
+	for (i = 0; i < 1; ++i)
+	{
+		kprintf("TIME ELAPSED (%d): %d\n", (i+1) * CONSUMED_MAX, times[i]);
+	}
+
+	return OK;
+}
+
+process	main(void) {
+	pid32 pid;
+	uint8 count = 0;
+
+	recvclr();
+
+	/* create mutex to sync access to 'consumed_count' */
+	sync_consumed_count = create_mutex();
+	/* Create the shared circular buffer and semaphores here */
+	init_cbuf();
+
+	resched_cntl(DEFER_START);
+	producer_id = create(producer, 4096, 200, "producer", 0);
+	consumer_id = create(consumer, 4096, 200, "consumer", 0);
+	timer_id = create(time_and_end, 4096, 200, "timer", 0);
+	kprintf("producer: %d\n", producer_id);
+	kprintf("consumer: %d\n", consumer_id);
+	kprintf("timer: %d\n", timer_id);
+
+	resume(producer_id);
+	resume(consumer_id);
+	resume(timer_id);
+	resched_cntl(DEFER_STOP);
+
+	kprintf("main: 1\n");
+	while(TRUE) {
+		pid = receive();
+		if (pid == producer_id) {
+			kprintf("Producer killed\n");
+			count++;
+		}
+		else if (pid == consumer_id) {
+			kprintf("Consumer killed\n");
+			count++;
+		}
+
+		if (count == 2)
+			break;
+	}
+	kprintf("main: 2\n");
+	/* destroy sync_consumed_count */
+	destroy_mutex(sync_consumed_count);
+	/* destroy cbuf */
+	deinit_cbuf();
+
+	return OK;
+}

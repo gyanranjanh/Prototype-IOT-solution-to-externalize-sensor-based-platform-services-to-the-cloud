@@ -1,0 +1,8 @@
+extends layout
+
+block content
+    h1= title
+    form#formAddUser(name="adduser",method="post",action="/adduser")
+        input#inputUserName(type="text", placeholder="bbbid", name="bbbid")
+        input#inputUserEmail(type="text", placeholder="numofsensors", name="numofsensors")
+        button#btnSubmit(type="submit") submit

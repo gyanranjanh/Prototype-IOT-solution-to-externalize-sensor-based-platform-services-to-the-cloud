@@ -1,0 +1,126 @@
+body,html {
+  padding: 50px;
+  /*height: 700px;
+  width:100%;*/
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #00B7FF;
+}
+h1 {
+  font-size: 24px;
+  letter-spacing: 1px;
+
+/*  margin: 0 0 15px; */
+  color: #fff;
+  font-family: museo-slab,Georgia;
+
+  text-shadow: 2px 1px 0 #87a6db,3px 2px 0 rgba(0,0,0,0.15)
+
+}
+
+homepage-hero {
+  background: url("../images/stars2.jpg") no-repeat center center;
+
+  background-attachment: scroll;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  position: absolute;
+  left: 0;
+  top: 0;
+  height:100%;
+  width:100%;
+  min-width: 100%;
+  min-height: 100%;
+
+}
+.containbelow {
+  position: absolute;
+  text-align: center;
+  left: 7.5%;
+  width:85%;
+  height:30%;
+
+}
+.below {
+
+  text-align: center;
+  left: 7.5%;
+  width:100%;
+  height:50%;
+
+}
+
+.below2 {
+
+  text-align: center;
+  left: 7.5%;
+  width:100%;
+  height:50%;
+
+}
+.contain {
+ position: absolute;
+  text-align: center;
+  left: 0;
+  width:100%;
+  height:64%;
+
+}
+iframe{
+  height:100%; width: 100%;
+}
+.center
+{
+  width:85%;
+  height:100%;
+  clear:both;
+  display: inline-block;
+}
+.left {
+  float: left;
+
+  /*background-image: url('../images/previous.png');*/
+  height:100%;
+  width:7%;
+  display:inline-block;
+}
+.right {
+  float: right;
+  /*background-image: url('../images/next.png');*/
+  display:inline-block;
+  height:100%;
+  width:7%;
+
+}
+
+.header{ background: black; height: 5%; width: 100%;
+  border-top: 2px solid #b3bdc0;
+  border-right: 2px solid #f1fcff;
+  border-left: 2px solid #b3bdc0;
+  color: white;
+  text-align:center;
+  padding-top: 0.5%;
+  font-size: medium}
+
+.direction{
+  margin: 260% 0 0 0;
+  cursor:pointer;
+}
+
+
+.toggle-button { background-color: white; margin: 5px 0; border-radius: 20px; border: 2px solid #D0D0D0; height: 24px; cursor: pointer; width: 120px; position: relative; display: inline-block; user-select: none; -webkit-user-select: none; -ms-user-select: none; -moz-user-select: none; padding-left:8px;  padding-top:2px;}
+.toggle-button button { cursor: pointer; outline: 0; display:block; position: absolute; left: 0; top: 0; border-radius: 100%; width: 30px; height: 30px; background-color: white; float: left; margin: -3px 0 0 -3px; border: 2px solid #D0D0D0; transition: left 0.3s; }
+.toggle-button-selected { background-color: #83B152; border: 2px solid #7DA652; }
+.toggle-button-selected button { left: 100px; top: 0; margin: 0; border: none; width: 30px; height: 30px; box-shadow: 0 0 4px rgba(0,0,0,0.1); }
+
+.center { text-align:center; }
+
+.label:hover {
+  background: #f2f5ff;
+  border-radius:5px;
+  padding:2px 4px;
+}
